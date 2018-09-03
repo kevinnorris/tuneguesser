@@ -1,30 +1,24 @@
-/* eslint import/first: 0 */
+/* eslint import/first: 0 camelcase: 0 */
 require('dotenv').config();
 
 import express from 'express';
 import bodyParser from 'body-parser';
 
 import { getUsers, sendMessage } from './slack-utils';
-import { getNewPollMessage, getPollWithVotes } from './poll';
+import { getNewMessage, getMessageWithVotes, INCORRECT_ACTION } from './poll/vote-message';
+import {
+  resetPoll,
+  getPollMessage,
+  setPollMessage,
+  vote,
+  getVoteCount,
+} from './poll/poll';
 
 const score = {};
 let channel;
-let currentPollMessage;
 let userVotes = {};
 
 // [./ngrok http 8080] from code directory to start tunnel
-
-function getVoteTally() {
-  return Object.values(userVotes).reduce((memo, vote) => {
-    if (!memo[vote]) {
-      memo[vote] = 1;
-    } else {
-      memo[vote] += 1;
-    }
-
-    return memo;
-  }, {});
-}
 
 const app = express();
 
@@ -33,21 +27,15 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post('/slack/command/guess', async (req, res) => {
   try {
-    const slackReqObj = req.body;
-    channel = slackReqObj.channel_id;
+    const { channel_id } = req.body;
+    resetPoll(channel_id);
 
-    const users = await getUsers(slackReqObj.channel_id);
-    const userActions = users.map(user => ({
-      name: 'vote',
-      text: user.name,
-      type: 'button',
-      value: user.id,
-    }));
+    const users = await getUsers(channel_id);
 
-    currentPollMessage = getNewPollMessage(userActions);
-    userVotes = {}; // Reset votes
+    const pollMessage = getNewMessage(users);
+    setPollMessage(pollMessage);
 
-    return res.json(currentPollMessage);
+    return res.json(pollMessage);
   } catch (err) {
     console.log(err);
     return res.status(500).send('Something blew up. We\'re looking into it.');
@@ -57,38 +45,22 @@ app.post('/slack/command/guess', async (req, res) => {
 app.post('/slack/actions', async (req, res) => {
   try {
     const actionResponse = JSON.parse(req.body.payload);
+    const { callback_id } = actionResponse;
 
-    if (actionResponse.callback_id === 'voting_action') {
-      const { user: { id } } = actionResponse;
-      const { name: actionName, value } = actionResponse.actions[0];
+    if (callback_id === 'voting_action') {
+      const { actions, user: { id } } = actionResponse;
+      const { name: actionName, value } = actions[0];
 
       if (actionName === 'vote') {
-        userVotes[id] = value;
+        vote(id, value);
+        const voteMap = getVoteCount();
 
-        const voteTally = getVoteTally();
-        console.log('voteTally', voteTally);
-
-        const pollWithVotes = getPollWithVotes(currentPollMessage, voteTally);
-        return res.json(pollWithVotes);
+        const messageWithVotes = getMessageWithVotes(getPollMessage(), voteMap);
+        return res.json(messageWithVotes);
       }
-
-      return res.json({
-        response_type: 'in_channel',
-        text: 'Something went wrong :heavy_check_mark:',
-        mrkdwn: true,
-        mrkdwn_in: ['text'],
-        replace_original: false,
-      });
-      // replace_original: bool that can go on messages
     }
 
-    return res.json({
-      response_type: 'in_channel',
-      text: 'Wrong action',
-      mrkdwn: true,
-      mrkdwn_in: ['text'],
-      replace_original: false,
-    });
+    return res.json(INCORRECT_ACTION);
   } catch (err) {
     console.log(err);
     return res.status(500).send('Something blew up. We\'re looking into it.');

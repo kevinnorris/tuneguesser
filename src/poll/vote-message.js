@@ -1,9 +1,9 @@
-const POLL_BASE = {
+const MESSAGE_BASE = {
   response_type: 'in_channel',
   text: 'Hello :slightly_smiling_face:',
 };
 
-const POLL_ATTACHMENT = {
+const ATTACHMENT_BASE = {
   text: 'Guess who added this song!',
   fallback: 'You are unalbe to guess',
   color: '#2c963f',
@@ -25,19 +25,38 @@ const FINISH_ACTION = {
   },
 };
 
-export function getNewPollMessage(userActions) {
+export const INCORRECT_ACTION = {
+  response_type: 'in_channel',
+  text: ':x: Incorrect Action',
+  mrkdwn: true,
+  mrkdwn_in: ['text'],
+  replace_original: true,
+};
+
+function createUserVoteButtons(users) {
+  return users.map(user => ({
+    name: 'vote',
+    text: user.name,
+    type: 'button',
+    value: user.id,
+  }));
+}
+
+export function getNewMessage(users) {
+  const userVoteButtons = createUserVoteButtons(users);
+
   return {
-    ...POLL_BASE,
+    ...MESSAGE_BASE,
     attachments: [
       {
-        ...POLL_ATTACHMENT,
-        actions: userActions,
+        ...ATTACHMENT_BASE,
+        actions: userVoteButtons,
       },
     ],
   };
 }
 
-export function getPollWithVotes(pollMessage, votesMap) {
+export function getMessageWithVotes(pollMessage, votesMap) {
   const actionsWithVotes = pollMessage.attachments[0].actions.map((action) => {
     if (votesMap[action.value]) {
       return {
@@ -52,7 +71,7 @@ export function getPollWithVotes(pollMessage, votesMap) {
     ...pollMessage,
     attachments: [
       {
-        ...POLL_ATTACHMENT,
+        ...ATTACHMENT_BASE,
         actions: actionsWithVotes,
       },
     ],

@@ -1,3 +1,4 @@
+/* eslint camelcase: 0 */
 import fetch from 'node-fetch';
 
 async function getUser(userId) {
