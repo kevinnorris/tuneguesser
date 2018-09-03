@@ -77,3 +77,15 @@ export function getMessageWithVotes(pollMessage, votesMap) {
     ],
   };
 }
+
+export function getScoreMessage(userNames) {
+  if (!userNames.length) {
+    return ':grimacing: That was a hard one';
+  }
+
+  if (userNames.length === 1) {
+    return `:star: Only @${userNames[0]} got it right`;
+  }
+
+  return `:+1: @${userNames.join(', @')} guessed correctly`;
+}

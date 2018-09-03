@@ -5,18 +5,22 @@ import express from 'express';
 import bodyParser from 'body-parser';
 
 import { getUsers, sendMessage } from './slack-utils';
-import { getNewMessage, getMessageWithVotes, INCORRECT_ACTION } from './poll/vote-message';
+import {
+  getNewMessage,
+  getMessageWithVotes,
+  getScoreMessage,
+  INCORRECT_ACTION,
+} from './poll/vote-message';
 import {
   resetPoll,
   getPollMessage,
   setPollMessage,
+  setUsers,
   vote,
   getVoteCount,
+  tallyScore,
+  isSongAttribution,
 } from './poll/poll';
-
-const score = {};
-let channel;
-let userVotes = {};
 
 // [./ngrok http 8080] from code directory to start tunnel
 
@@ -34,6 +38,7 @@ app.post('/slack/command/guess', async (req, res) => {
 
     const pollMessage = getNewMessage(users);
     setPollMessage(pollMessage);
+    setUsers(users);
 
     return res.json(pollMessage);
   } catch (err) {
@@ -74,33 +79,20 @@ app.post('/slack/events', async (req, res) => {
 
   if (req.body.event) {
     const { text, type } = req.body.event;
+    const isMessage = type === 'message';
+    console.log('isMessage', isMessage);
+    const textIsSongAttribution = isSongAttribution(text);
+    console.log('textIsSongAttribution', textIsSongAttribution);
 
-    if (type === 'message' && text && text.includes(':microphone: This track, ') && text.includes(', was last requested by ')) {
+    if (isMessage && textIsSongAttribution) {
       const requestingUserId = text.match(/<@(.+?)>/)[1];
       console.log('requestingUserId', requestingUserId);
 
-      const usersWhoGuessedCorrectly = Object.entries(userVotes).reduce((memo, [userId, guess]) => {
-        if (userId !== requestingUserId && guess === requestingUserId) {
-          return [...memo, userId];
-        }
-        return memo;
-      }, []);
-      console.log('usersWhoGuessedCorrectly', usersWhoGuessedCorrectly);
+      const [userNamesWhoGuessedCorrectly, channelId] = tallyScore(requestingUserId);
 
-      // Increase their score
-      usersWhoGuessedCorrectly.forEach((userId) => {
-        if (score[userId]) {
-          score[userId] += 1;
-        } else {
-          score[userId] = 1;
-        }
-      });
-
-      // Reset votes
-      userVotes = {};
-
+      const message = getScoreMessage(userNamesWhoGuessedCorrectly);
       // Send a message about who got it right
-      sendMessage({ text: 'Score increased' }, channel);
+      sendMessage(message, channelId);
     }
   }
   return res.json({ response: 'hello' });

@@ -2,14 +2,15 @@
 const score = {};
 let currentChannel;
 let currentPollMessage;
+let currentUsers;
 let votes = {};
 
 export function getVoteCount() {
-  return Object.values(votes).reduce((memo, voteValue) => {
-    if (!memo[voteValue]) {
-      memo[voteValue] = 1;
+  return Object.values(votes).reduce((memo, guess) => {
+    if (!memo[guess]) {
+      memo[guess] = 1;
     } else {
-      memo[voteValue] += 1;
+      memo[guess] += 1;
     }
 
     return memo;
@@ -29,8 +30,54 @@ export function setPollMessage(message) {
   currentPollMessage = message;
 }
 
+export function setUsers(users) {
+  currentUsers = users.reduce((memo, user) => {
+    const { id, ...rest } = user;
+    memo[id] = rest;
+  }, {});
+}
+
 export function vote(user, userVotedFor) {
   // if (user !== userVotedFor) { // For testing
     votes[user] = userVotedFor;
   // }
+}
+
+function getUsersWithCorrectAnswer(requestingUserId) {
+  return Object.entries(votes).reduce((memo, [userId, guess]) => {
+    if (
+      // userId !== requestingUserId &&// For testing
+      guess === requestingUserId
+    ) {
+      return [...memo, userId];
+    }
+    return memo;
+  }, []);
+}
+
+function increaseScores(userIds) {
+  userIds.forEach((userId) => {
+    if (score[userId]) {
+      score[userId] += 1;
+    } else {
+      score[userId] = 1;
+    }
+  });
+}
+
+export function tallyScore(requestingUserId) {
+  const userIdsWithCorrectAnswer = getUsersWithCorrectAnswer(requestingUserId);
+  console.log('userIdsWithCorrectAnswer', userIdsWithCorrectAnswer);
+
+  increaseScores(userIdsWithCorrectAnswer);
+  votes = {}; // Reset votes
+
+  const userNames = userIdsWithCorrectAnswer.map(id => currentUsers[id].name);
+  return [userNames, currentChannel];
+}
+
+export function isSongAttribution(text) {
+  return text
+    && text.includes(':microphone: This track, ')
+    && text.includes(', was last requested by ');
 }
