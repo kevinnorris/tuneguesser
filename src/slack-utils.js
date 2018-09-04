@@ -38,8 +38,12 @@ export async function getUsers(channelId) {
 }
 
 export async function sendMessage(message, channelId) {
-  const url = `https://slack.com/api/chat.postMessage?token=${process.env.BOT_TOKEN}&channel=${channelId}`;
+  const encodedMessage = encodeURIComponent(message);
+  const url = `https://slack.com/api/chat.postMessage?token=${process.env.BOT_TOKEN}&channel=${channelId}&text=${encodedMessage}`;
 
-  const response = await fetch(url, { method: 'POST', body: JSON.stringify(message) });
-  console.log('response', response);
+  const response = await fetch(url, {
+    method: 'POST',
+  });
+  const parsed = await response.json();
+  // TODO: error handling when ok: false
 }
