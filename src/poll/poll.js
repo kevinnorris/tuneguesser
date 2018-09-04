@@ -34,6 +34,8 @@ export function setUsers(users) {
   currentUsers = users.reduce((memo, user) => {
     const { id, ...rest } = user;
     memo[id] = rest;
+
+    return memo;
   }, {});
 }
 
