@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "engines": {
+    "node": "10.9.0"
+  },
   "scripts": {
     "dev": "NODE_ENV=development babel-node src/index.js",
     "build": "rm -rf ./dist/ && babel src --out-dir dist/ --copy-files",
