@@ -9,6 +9,7 @@ import {
   getNewMessage,
   getMessageWithVotes,
   getScoreMessage,
+  getTotalScoreMessage,
   INCORRECT_ACTION,
 } from './poll/vote-message';
 import {
@@ -47,6 +48,17 @@ app.post('/slack/command/guess', async (req, res) => {
   }
 });
 
+app.post('/slack/command/score', async (req, res) => {
+  const message = getTotalScoreMessage();
+  
+  return res.json({
+    response_type: 'in_channel',
+    text: message,
+  });
+});
+
+// TODO add slack command /score
+
 app.post('/slack/actions', async (req, res) => {
   try {
     const actionResponse = JSON.parse(req.body.payload);
@@ -77,21 +89,23 @@ app.post('/slack/events', async (req, res) => {
     return res.send(req.body.challenge);
   }
 
+  // :microphone: This track, , was last requested by @Kevin
   if (req.body.event) {
     const { text, type } = req.body.event;
     const isMessage = type === 'message';
-    console.log('isMessage', isMessage);
     const textIsSongAttribution = isSongAttribution(text);
-    console.log('textIsSongAttribution', textIsSongAttribution);
 
     if (isMessage && textIsSongAttribution) {
       const requestingUserId = text.match(/<@(.+?)>/)[1];
-      console.log('requestingUserId', requestingUserId);
+      const song = text.match(/track, (.+?), was/)[1];
 
-      const [userNamesWhoGuessedCorrectly, channelId] = tallyScore(requestingUserId);
+      const [
+        userNamesWhoGuessedCorrectly,
+        channelId,
+        requestingUserName,
+      ] = tallyScore(requestingUserId);
 
-      const message = getScoreMessage(userNamesWhoGuessedCorrectly);
-      // Send a message about who got it right
+      const message = getScoreMessage(song, requestingUserName, userNamesWhoGuessedCorrectly);
       sendMessage(message, channelId);
     }
   }

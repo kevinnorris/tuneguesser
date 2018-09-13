@@ -40,9 +40,9 @@ export function setUsers(users) {
 }
 
 export function vote(user, userVotedFor) {
-  // if (user !== userVotedFor) { // For testing
+  if (user !== userVotedFor) { // For testing comment out
     votes[user] = userVotedFor;
-  // }
+  }
 }
 
 function getUsersWithCorrectAnswer(requestingUserId) {
@@ -69,13 +69,12 @@ function increaseScores(userIds) {
 
 export function tallyScore(requestingUserId) {
   const userIdsWithCorrectAnswer = getUsersWithCorrectAnswer(requestingUserId);
-  console.log('userIdsWithCorrectAnswer', userIdsWithCorrectAnswer);
 
   increaseScores(userIdsWithCorrectAnswer);
   votes = {}; // Reset votes
 
   const userNames = userIdsWithCorrectAnswer.map(id => currentUsers[id].name);
-  return [userNames, currentChannel];
+  return [userNames, currentChannel, currentUsers[requestingUserId]];
 }
 
 export function isSongAttribution(text) {

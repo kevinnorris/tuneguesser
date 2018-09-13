@@ -78,14 +78,23 @@ export function getMessageWithVotes(pollMessage, votesMap) {
   };
 }
 
-export function getScoreMessage(userNames) {
-  if (!userNames.length) {
-    return ':grimacing: That was a hard one';
-  }
+export function getScoreMessage(song, requestingUserName, userNamesWhoGuessedCorrectly) {
 
-  if (userNames.length === 1) {
-    return `:star: Only @${userNames[0]} got it right`;
+  switch (userNamesWhoGuessedCorrectly.length) {
+  case 0:
+    return `:sleuth_or_spy: No one guessed it was ${requestingUserName} who played ${song}`;
+  case 1:
+    return `:star-struck: Only @${userNamesWhoGuessedCorrectly[0]} guessed that ${requestingUserName} played ${song}`;
+  case 2:
+    return `@${userNamesWhoGuessedCorrectly[0]} :right-facing_fist::left-facing_fist: @${userNamesWhoGuessedCorrectly[1]}`
+      + `both buessed that ${requestingUserName} played ${song}`;
+  case 5:
+    return `:eyes: we're on to you ${requestingUserName}`;
+  default:
+    return `:+1: @${userNamesWhoGuessedCorrectly.join(', @')} guessed ${requestingUserName} played ${song}`;
   }
+}
 
-  return `:+1: @${userNames.join(', @')} guessed correctly`;
+export function getTotalScoreMessage() {
+  return 'Total score message';
 }
