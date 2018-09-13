@@ -7,7 +7,7 @@
     "node": "10.9.0"
   },
   "scripts": {
-    "start": "yarn build && yarn prod",
+    "start": "npm build && npm prod",
     "dev": "NODE_ENV=development babel-node src/index.js",
     "build": "rm -rf ./dist/ && babel src --out-dir dist/ --copy-files",
     "prod": "NODE_ENV=production node dist/index.js",
