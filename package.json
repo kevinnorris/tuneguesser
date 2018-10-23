@@ -3,9 +3,6 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
-  "engines": {
-    "node": "10.9.0"
-  },
   "scripts": {
     "start": "npm build && npm prod",
     "dev": "NODE_ENV=development babel-node src/index.js",
