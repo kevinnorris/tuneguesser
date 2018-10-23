@@ -74,7 +74,7 @@ export function tallyScore(requestingUserId) {
   votes = {}; // Reset votes
 
   const userNames = userIdsWithCorrectAnswer.map(id => currentUsers[id].name);
-  return [userNames, currentChannel, currentUsers[requestingUserId]];
+  return [userNames, currentChannel, currentUsers[requestingUserId].name];
 }
 
 export function isSongAttribution(text) {
