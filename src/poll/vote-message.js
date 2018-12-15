@@ -11,20 +11,6 @@ const ATTACHMENT_BASE = {
   callback_id: 'voting_action',
 };
 
-const FINISH_ACTION = {
-  name: 'finish',
-  text: 'Finish',
-  style: 'danger',
-  type: 'button',
-  value: 'finish',
-  confirm: {
-    title: 'Are you sure?',
-    text: 'This will close the guessing and talley votes',
-    ok_text: 'Yes',
-    dismiss_text: 'No',
-  },
-};
-
 export const INCORRECT_ACTION = {
   response_type: 'in_channel',
   text: ':x: Incorrect Action',
@@ -43,16 +29,15 @@ function createUserVoteButtons(users) {
 }
 
 function createAttachmenstForButtons(userVoteButtons) {
+  // breaks userVoteButtons into attachments with action groups of 5
   return userVoteButtons.reduce((memo, voteButton) => {
-    let lastAttachmentIndex = memo.length - 1;
+    const lastAttachmentIndex = memo.length - 1;
 
     if (memo[lastAttachmentIndex].actions.length === 5) {
-      memo.push({ ...ATTACHMENT_BASE, actions: [] });
-      lastAttachmentIndex += 1;
+      return [...memo, { ...ATTACHMENT_BASE, actions: [voteButton] }];
     }
 
     memo[lastAttachmentIndex].actions.push(voteButton);
-
     return memo;
   }, [{ ...ATTACHMENT_BASE, actions: [] }]);
 }

@@ -9,12 +9,18 @@ async function getUser(userId) {
     return userJson.error;
   }
 
-  const { user: { id, profile: { bot_id, display_name, first_name, image_32 } } } = userJson;
+  const {
+    user: {
+      id, profile: {
+        bot_id, display_name, first_name, real_name, image_32,
+      },
+    },
+  } = userJson;
   if (bot_id) {
     return null;
   }
 
-  return { id, name: display_name || first_name, avatarUrl: image_32 };
+  return { id, name: display_name || first_name || real_name, avatarUrl: image_32 };
 }
 
 export async function getUsers(channelId) {

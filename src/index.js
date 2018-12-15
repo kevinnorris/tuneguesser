@@ -90,16 +90,14 @@ app.post('/slack/events', async (req, res) => {
     const isMessage = type === 'message';
     const textIsSongAttribution = isSongAttribution(text);
 
-    console.log('text', text);
+    // :microphone: This track, Like a Lie - Jetski Safari, was last requested by <@UA1P982DT|Kevin>
     if (isMessage && textIsSongAttribution) {
-      const requestingUserId = text.match(/<@(.+?)\|/)[1];
+      const requestingUserId = text.match(/@(.+?)\|/)[1];
       const song = text.match(/track, (.+?), was/)[1];
 
       const [
-        // userNamesWhoGuessedCorrectly,
         usersWithCorrectAnswer,
         channelId,
-        // requestingUserName,
       ] = tallyScore(requestingUserId);
 
       const message = getScoreMessage(song, `<@${requestingUserId}>`, usersWithCorrectAnswer);

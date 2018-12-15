@@ -73,8 +73,6 @@ export function tallyScore(requestingUserId) {
   increaseScores(userIdsWithCorrectAnswer);
   votes = {}; // Reset votes
 
-  const userNames = userIdsWithCorrectAnswer.map(id => currentUsers[id].name);
-  // return [userNames, currentChannel, currentUsers[requestingUserId].name];
   return [userIdsWithCorrectAnswer, currentChannel];
 }
 
