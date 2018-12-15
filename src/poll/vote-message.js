@@ -1,28 +1,14 @@
 const MESSAGE_BASE = {
   response_type: 'in_channel',
-  text: 'Hello :slightly_smiling_face:',
+  text: 'Guess who added this song! :notes:',
 };
 
 const ATTACHMENT_BASE = {
-  text: 'Guess who added this song!',
-  fallback: 'You are unalbe to guess',
+  text: '',
+  fallback: 'Unable to display buttons',
   color: '#2c963f',
   attachment_type: 'default',
   callback_id: 'voting_action',
-};
-
-const FINISH_ACTION = {
-  name: 'finish',
-  text: 'Finish',
-  style: 'danger',
-  type: 'button',
-  value: 'finish',
-  confirm: {
-    title: 'Are you sure?',
-    text: 'This will close the guessing and talley votes',
-    ok_text: 'Yes',
-    dismiss_text: 'No',
-  },
 };
 
 export const INCORRECT_ACTION = {
@@ -42,56 +28,58 @@ function createUserVoteButtons(users) {
   }));
 }
 
+function createAttachmenstForButtons(userVoteButtons) {
+  // breaks userVoteButtons into attachments with action groups of 5
+  return userVoteButtons.reduce((memo, voteButton) => {
+    const lastAttachmentIndex = memo.length - 1;
+
+    if (memo[lastAttachmentIndex].actions.length === 5) {
+      return [...memo, { ...ATTACHMENT_BASE, actions: [voteButton] }];
+    }
+
+    memo[lastAttachmentIndex].actions.push(voteButton);
+    return memo;
+  }, [{ ...ATTACHMENT_BASE, actions: [] }]);
+}
+
 export function getNewMessage(users) {
   const userVoteButtons = createUserVoteButtons(users);
+  const attachments = createAttachmenstForButtons(userVoteButtons);
 
   return {
     ...MESSAGE_BASE,
-    attachments: [
-      {
-        ...ATTACHMENT_BASE,
-        actions: userVoteButtons,
-      },
-    ],
+    attachments,
   };
 }
 
 export function getMessageWithVotes(pollMessage, votesMap) {
-  const actionsWithVotes = pollMessage.attachments[0].actions.map((action) => {
-    if (votesMap[action.value]) {
-      return {
-        ...action,
-        text: `${action.text} (${votesMap[action.value]})`,
-      };
-    }
-    return action;
-  });
+  const updatedAttachments = pollMessage.attachments.map(attachment => ({
+    ...attachment,
+    actions: attachment.actions.map(action => ({
+      ...action,
+      text: votesMap[action.value] ? `${action.text} (${votesMap[action.value]})` : action.text,
+    })),
+  }));
 
   return {
     ...pollMessage,
-    attachments: [
-      {
-        ...ATTACHMENT_BASE,
-        actions: actionsWithVotes,
-      },
-    ],
+    attachments: updatedAttachments,
   };
 }
 
-export function getScoreMessage(song, requestingUserName, userNamesWhoGuessedCorrectly) {
-
-  switch (userNamesWhoGuessedCorrectly.length) {
+export function getScoreMessage(song, requestingUser, usersWithCorrectAnswer) {
+  switch (usersWithCorrectAnswer.length) {
   case 0:
-    return `:sleuth_or_spy: No one guessed it was ${requestingUserName} who played ${song}`;
+    return `:sleuth_or_spy: No one guessed it was ${requestingUser} who played ${song}`;
   case 1:
-    return `:star-struck: Only @${userNamesWhoGuessedCorrectly[0]} guessed that ${requestingUserName} played ${song}`;
+    return `:star-struck: Only ${usersWithCorrectAnswer[0]} guessed that ${requestingUser} played ${song}`;
   case 2:
-    return `@${userNamesWhoGuessedCorrectly[0]} :right-facing_fist::left-facing_fist: @${userNamesWhoGuessedCorrectly[1]}`
-      + `both buessed that ${requestingUserName} played ${song}`;
+    return `${usersWithCorrectAnswer[0]} :right-facing_fist::left-facing_fist: ${usersWithCorrectAnswer[1]}`
+      + ` both guessed that ${requestingUser} played ${song}`;
   case 5:
-    return `:eyes: we're on to you ${requestingUserName}`;
+    return `:eyes: we're on to you ${requestingUser}`;
   default:
-    return `:+1: @${userNamesWhoGuessedCorrectly.join(', @')} guessed ${requestingUserName} played ${song}`;
+    return `:+1: ${usersWithCorrectAnswer.join(', ')} guessed ${requestingUser} played ${song}`;
   }
 }
 

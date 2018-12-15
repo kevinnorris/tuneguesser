@@ -23,8 +23,6 @@ import {
   isSongAttribution,
 } from './poll/poll';
 
-// [./ngrok http 8080] from code directory to start tunnel
-
 const app = express();
 
 app.use(bodyParser.json());
@@ -50,14 +48,12 @@ app.post('/slack/command/guess', async (req, res) => {
 
 app.post('/slack/command/score', async (req, res) => {
   const message = getTotalScoreMessage();
-  
+
   return res.json({
     response_type: 'in_channel',
     text: message,
   });
 });
-
-// TODO add slack command /score
 
 app.post('/slack/actions', async (req, res) => {
   try {
@@ -89,23 +85,22 @@ app.post('/slack/events', async (req, res) => {
     return res.send(req.body.challenge);
   }
 
-  // :microphone: This track, , was last requested by @Kevin
   if (req.body.event) {
     const { text, type } = req.body.event;
     const isMessage = type === 'message';
     const textIsSongAttribution = isSongAttribution(text);
 
+    // :microphone: This track, Like a Lie - Jetski Safari, was last requested by <@UA1P982DT|Kevin>
     if (isMessage && textIsSongAttribution) {
-      const requestingUserId = text.match(/<@(.+?)>/)[1];
+      const requestingUserId = text.match(/@(.+?)\|/)[1];
       const song = text.match(/track, (.+?), was/)[1];
 
       const [
-        userNamesWhoGuessedCorrectly,
+        usersWithCorrectAnswer,
         channelId,
-        requestingUserName,
       ] = tallyScore(requestingUserId);
 
-      const message = getScoreMessage(song, requestingUserName, userNamesWhoGuessedCorrectly);
+      const message = getScoreMessage(song, `<@${requestingUserId}>`, usersWithCorrectAnswer);
       sendMessage(message, channelId);
     }
   }

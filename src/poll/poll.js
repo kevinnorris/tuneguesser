@@ -68,13 +68,12 @@ function increaseScores(userIds) {
 }
 
 export function tallyScore(requestingUserId) {
-  const userIdsWithCorrectAnswer = getUsersWithCorrectAnswer(requestingUserId);
+  const userIdsWithCorrectAnswer = getUsersWithCorrectAnswer(requestingUserId).map(id => `<@${id}>`);
 
   increaseScores(userIdsWithCorrectAnswer);
   votes = {}; // Reset votes
 
-  const userNames = userIdsWithCorrectAnswer.map(id => currentUsers[id].name);
-  return [userNames, currentChannel, currentUsers[requestingUserId].name];
+  return [userIdsWithCorrectAnswer, currentChannel];
 }
 
 export function isSongAttribution(text) {
