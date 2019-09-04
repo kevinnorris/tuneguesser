@@ -11,11 +11,22 @@ provider:
   stage: prod
   region: ap-southeast-2
   memorySize: 128
+  package:
+    individually: true
+
+custom:
+  botToken: ${ssm:/tuneguesser-slack-bot-token~true}
 
 functions:
-  hello:
-    handler: src/handler.hello
+  guess:
+    handler: src/guess/index.guess
+    package:
+      include:
+        - src/guess/**
+        - src/slack-utils.ts
+    environment:
+      BOT_TOKEN: ${self:custom.botToken}
     events:
       - http:
-          method: get
-          path: hello
+          method: post
+          path: guess

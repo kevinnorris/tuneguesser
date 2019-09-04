@@ -1,0 +1,49 @@
+{
+  "ok": true,
+  "channel": {
+    "id": "CCKUVFWET",
+    "name": "general",
+    "is_channel": true,
+    "created": 1535709899,
+    "is_archived": false,
+    "is_general": true,
+    "unlinked": 0,
+    "creator": "UCJM7KEUC",
+    "name_normalized": "general",
+    "is_read_only": false,
+    "is_thread_only": false,
+    "is_non_threadable": false,
+    "is_shared": false,
+    "is_org_shared": false,
+    "is_member": true,
+    "is_private": false,
+    "is_mpim": false,
+    "last_read": "1567584017.000200",
+    "latest": {
+      "client_msg_id": "01702fda-5d06-4b5e-9459-9b0ef584bbee",
+      "type": "message",
+      "text": ":microphone: This track, Like a Lie - Jetski Safari, was last requested by <@UA1P982DT|Kevin>",
+      "user": "UCJM7KEUC",
+      "ts": "1545708492.001500",
+      "team": "TCJTQS398",
+      "edited": {
+        "user": "UCJM7KEUC",
+        "ts": "1545708498.000000"
+      }
+    },
+    "unread_count": 0,
+    "unread_count_display": 0,
+    "members": ["UCJM7KEUC"],
+    "topic": {
+      "value": "Company-wide announcements and work-based matters",
+      "creator": "UCJM7KEUC",
+      "last_set": 1535709899
+    },
+    "purpose": {
+      "value": "This channel is for workspace-wide communication and announcements. All members are in this channel.",
+      "creator": "UCJM7KEUC",
+      "last_set": 1535709899
+    },
+    "previous_names": []
+  }
+}
